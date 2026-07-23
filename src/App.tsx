@@ -6,7 +6,7 @@ import {
   SystemSettings, 
   AppNotification 
 } from './types';
-import { db } from './utils/db';
+import { db, subscribeRecords, saveRecords } from './utils/db';
 
 // Component imports
 import Sidebar from './components/Sidebar';
@@ -59,20 +59,21 @@ export default function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [toasts, setToasts] = useState<{ id: string; text: string; type: 'success' | 'info' | 'warning' | 'danger' }[]>([]);
 
-  // 1. Initial Load of DB records
+  // 1. Initial Load: subscribe to Firestore real-time updates for records
   useEffect(() => {
-    // Load state from db
-    setRecords(db.getRecords());
+    // Load local-only data immediately
     setProfile(db.getProfile());
     setSettings(db.getSettings());
     setNotifications(db.getNotifications());
-    
-    // Simulate initial system load
-    const loadTimer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1200);
 
-    return () => clearTimeout(loadTimer);
+    // Subscribe to Firestore records in real-time
+    const unsubscribe = subscribeRecords((remoteRecords) => {
+      setRecords(remoteRecords);
+      // Once first snapshot arrives, dismiss loading screen
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // 2. Sync Theme State to Document Root
@@ -162,7 +163,7 @@ export default function App() {
 
     const updated = [recordWithId, ...records];
     setRecords(updated);
-    db.saveRecords(updated);
+    saveRecords(updated);
 
     // Create system notification
     const newNotif: AppNotification = {
@@ -180,7 +181,7 @@ export default function App() {
   const handleUpdateRecord = (updatedRecord: SignatureRecord) => {
     const updatedList = records.map(r => r.id === updatedRecord.id ? updatedRecord : r);
     setRecords(updatedList);
-    db.saveRecords(updatedList);
+    saveRecords(updatedList);
 
     const newNotif: AppNotification = {
       id: Math.random().toString(),
@@ -198,7 +199,7 @@ export default function App() {
     const target = records.find(r => r.id === id);
     const updatedList = records.filter(r => r.id !== id);
     setRecords(updatedList);
-    db.saveRecords(updatedList);
+    saveRecords(updatedList);
 
     if (target) {
       const newNotif: AppNotification = {
@@ -216,7 +217,7 @@ export default function App() {
   // 8. Restore records from backup
   const handleRestoreRecords = (importedRecords: SignatureRecord[]) => {
     setRecords(importedRecords);
-    db.saveRecords(importedRecords);
+    saveRecords(importedRecords);
 
     const newNotif: AppNotification = {
       id: Math.random().toString(),
@@ -232,7 +233,7 @@ export default function App() {
   // 9. Clear all database rows
   const handleClearAllData = () => {
     setRecords([]);
-    db.saveRecords([]);
+    saveRecords([]);
 
     const newNotif: AppNotification = {
       id: Math.random().toString(),
