@@ -1,0 +1,6 @@
+{
+  "name": "Mr. Kafa Signature System",
+  "description": "A elegant and highly functional signature tracking system built for Mr. Kafa, featuring signature records, daily trends, document analytics, backup/restore, and voice integration.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

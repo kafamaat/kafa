@@ -1,0 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* Day Mode Core branding: Background #F8D9CD, Text #1C3150 */
+  --color-slate-50: #F8D9CD;                 /* Main background */
+  --color-slate-100: rgba(28, 49, 80, 0.1);  /* Very soft borders / outlines */
+  --color-slate-200: rgba(28, 49, 80, 0.18); /* Visible border / divider */
+  --color-slate-300: rgba(28, 49, 80, 0.28); /* Accent border / placeholder */
+  --color-slate-400: rgba(28, 49, 80, 0.5);  /* Muted metadata */
+  --color-slate-500: rgba(28, 49, 80, 0.65); /* Description text / subtitle */
+  --color-slate-600: rgba(28, 49, 80, 0.8);  /* Body paragraphs */
+  --color-slate-700: #293f5e;                /* Sub-headings / labels */
+  --color-slate-800: #1C3150;                /* Display title */
+  --color-slate-900: #1C3150;                /* Heading text */
+  --color-slate-950: #122136;                /* Deep background shadow */
+  
+  --color-white: #FFF5F1;                    /* Layered card/panel background */
+  --color-blue-50: rgba(28, 49, 80, 0.05);   /* Hover selection row */
+  --color-blue-100: rgba(28, 49, 80, 0.12);
+  --color-blue-600: #1C3150;                 /* Primary brand action button background */
+  --color-blue-700: #122136;                 /* Hover state button */
+}
+
+.dark {
+  /* Night Mode Core branding: Background #1C3150, Text #F8D9CD */
+  --color-slate-50: #1C3150;                 /* Dark main background */
+  --color-slate-100: rgba(248, 217, 205, 0.1);  /* Very soft borders */
+  --color-slate-200: rgba(248, 217, 205, 0.18); /* Visible divider */
+  --color-slate-300: rgba(248, 217, 205, 0.28);
+  --color-slate-400: rgba(248, 217, 205, 0.45); /* Muted labels */
+  --color-slate-500: rgba(248, 217, 205, 0.6);  /* Subtitles */
+  --color-slate-600: rgba(248, 217, 205, 0.75); /* Body text */
+  --color-slate-700: #fbd6c9;                /* Sub-headings */
+  --color-slate-800: #F8D9CD;                /* Display title */
+  --color-slate-900: #F8D9CD;                /* Heading text */
+  --color-slate-950: #15253d;                /* Background block contrast */
+  
+  --color-white: #253d5e;                    /* Card/panel in night mode */
+  --color-blue-50: rgba(248, 217, 205, 0.08);   /* Selection row hover */
+  --color-blue-100: rgba(248, 217, 205, 0.15);
+  --color-blue-600: #F8D9CD;                 /* Primary action button background */
+  --color-blue-700: #ffebd1;                 /* Hover state button */
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Global Smooth Transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-900);
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Styles for Light/Dark Theme */
+.glass-panel {
+  background: rgba(255, 245, 241, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(28, 49, 80, 0.12);
+}
+
+.dark .glass-panel {
+  background: rgba(37, 61, 94, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(248, 217, 205, 0.12);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(28, 49, 80, 0.25);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(248, 217, 205, 0.25);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(28, 49, 80, 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(248, 217, 205, 0.4);
+}
+
+/* Navigation Link Hover & Active */
+.nav-link-active {
+  background: rgba(28, 49, 80, 0.08) !important;
+  color: #1C3150 !important;
+  border-left: 4px solid #1C3150;
+}
+
+.dark .nav-link-active {
+  background: rgba(248, 217, 205, 0.12) !important;
+  color: #F8D9CD !important;
+  border-left: 4px solid #F8D9CD;
+}
+
+/* Custom Statistics Cards */
+.stat-card-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card-glow::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(28, 49, 80, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.dark .stat-card-glow::after {
+  background: radial-gradient(circle, rgba(248, 217, 205, 0.05) 0%, transparent 70%);
+}
+
+/* Printing Optimization Styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .glass-panel {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+}
