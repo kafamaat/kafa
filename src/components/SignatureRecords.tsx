@@ -57,12 +57,6 @@ export default function SignatureRecords({
     const d = new Date();
     return d.toISOString().split('T')[0];
   });
-  const [addTime, setAddTime] = useState(() => {
-    const d = new Date();
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
-  });
   const [addDocType, setAddDocType] = useState('');
   const [addPerson, setAddPerson] = useState('');
   const [addResponsible, setAddResponsible] = useState('');
@@ -205,10 +199,6 @@ export default function SignatureRecords({
       addToast('Please select a date.', 'warning');
       return;
     }
-    if (!addTime) {
-      addToast('Please select a time.', 'warning');
-      return;
-    }
     if (!addDocType) {
       addToast('Please select a document type.', 'warning');
       return;
@@ -222,10 +212,13 @@ export default function SignatureRecords({
       return;
     }
 
+    const now = new Date();
+    const autoTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
     onAddSignature({
       title: addTitle.trim(),
       date: addDate,
-      time: addTime,
+      time: autoTime,
       docType: addDocType,
       person: addPerson,
       responsible: addResponsible
@@ -236,12 +229,6 @@ export default function SignatureRecords({
     // Clear fields
     setAddTitle('');
     setAddDate(new Date().toISOString().split('T')[0]);
-    setAddTime(() => {
-      const d = new Date();
-      const hours = String(d.getHours()).padStart(2, '0');
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      return `${hours}:${minutes}`;
-    });
     setAddDocType('');
     setAddPerson('');
     setAddResponsible('');
@@ -257,12 +244,6 @@ export default function SignatureRecords({
   const handleQuickReset = () => {
     setAddTitle('');
     setAddDate(new Date().toISOString().split('T')[0]);
-    setAddTime(() => {
-      const d = new Date();
-      const hours = String(d.getHours()).padStart(2, '0');
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      return `${hours}:${minutes}`;
-    });
     setAddDocType('');
     setAddPerson('');
     setAddResponsible('');
@@ -553,25 +534,6 @@ export default function SignatureRecords({
                     required
                     value={addDate}
                     onChange={(e) => setAddDate(e.target.value)}
-                    className="w-full pl-3 pr-3.5 py-3 bg-transparent text-sm text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              {/* Select Time next to Date of Signature */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  Select Time <span className="text-rose-500">*</span>
-                </label>
-                <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:border-blue-500 dark:focus-within:border-blue-400 overflow-hidden shadow-sm">
-                  <div className="flex items-center pl-3.5 pointer-events-none text-slate-400 shrink-0">
-                    <Clock className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="time"
-                    required
-                    value={addTime}
-                    onChange={(e) => setAddTime(e.target.value)}
                     className="w-full pl-3 pr-3.5 py-3 bg-transparent text-sm text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
                   />
                 </div>
