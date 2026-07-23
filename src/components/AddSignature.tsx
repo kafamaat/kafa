@@ -9,7 +9,8 @@ import {
   Save, 
   RotateCcw, 
   X,
-  AlertCircle
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 import { SignatureRecord } from '../types';
 
@@ -28,6 +29,7 @@ export default function AddSignature({ onAddSignature, onNavigate, addToast }: A
   });
   const [docType, setDocType] = useState('');
   const [person, setPerson] = useState('');
+  const [responsible, setResponsible] = useState('');
   
   // Voice recognition states
   const [isListening, setIsListening] = useState(false);
@@ -150,6 +152,7 @@ export default function AddSignature({ onAddSignature, onNavigate, addToast }: A
     setDate(new Date().toISOString().split('T')[0]);
     setDocType('');
     setPerson('');
+    setResponsible('');
     if (isListening && recognitionInstance) {
       recognitionInstance.stop();
     }
@@ -175,12 +178,17 @@ export default function AddSignature({ onAddSignature, onNavigate, addToast }: A
       addToast('Please select a person responsible.', 'warning');
       return;
     }
+    if (!responsible) {
+      addToast('Please select a responsible status on signification.', 'warning');
+      return;
+    }
 
     onAddSignature({
       title: title.trim(),
       date,
       docType,
-      person
+      person,
+      responsible
     });
 
     addToast('Signature record saved successfully!', 'success');
@@ -331,6 +339,30 @@ export default function AddSignature({ onAddSignature, onNavigate, addToast }: A
                   <option value="Sreynhanh" className="bg-white dark:bg-slate-800">Sreynhanh</option>
                   <option value="Buntheng" className="bg-white dark:bg-slate-800">Buntheng</option>
                   <option value="Other" className="bg-white dark:bg-slate-800">Other</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Responsible on Signification */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                Responsible on Signification <span className="text-rose-500">*</span>
+              </label>
+              <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:border-blue-500 dark:focus-within:border-blue-400 overflow-hidden shadow-sm">
+                <div className="flex items-center pl-3.5 pointer-events-none text-slate-400">
+                  <CheckCircle className="w-4 h-4" />
+                </div>
+                <select
+                  required
+                  value={responsible}
+                  onChange={(e) => setResponsible(e.target.value)}
+                  className="w-full pl-3 pr-3.5 py-3 bg-transparent text-sm text-slate-700 dark:text-slate-200 focus:outline-none appearance-none"
+                >
+                  <option value="" className="bg-white dark:bg-slate-800">Select signification status</option>
+                  <option value="Requested" className="bg-white dark:bg-slate-800">Requested</option>
+                  <option value="Checked" className="bg-white dark:bg-slate-800">Checked</option>
+                  <option value="Verified" className="bg-white dark:bg-slate-800">Verified</option>
+                  <option value="Approved" className="bg-white dark:bg-slate-800">Approved</option>
                 </select>
               </div>
             </div>

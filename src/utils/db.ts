@@ -12,6 +12,7 @@ const SEED_RECORDS: SignatureRecord[] = [
     date: '2026-07-21',
     docType: 'Local Recruitment',
     person: 'Chantha',
+    responsible: 'Approved',
     createdAt: new Date(2026, 6, 21, 9, 30, 0).toISOString()
   },
   {
@@ -20,6 +21,7 @@ const SEED_RECORDS: SignatureRecord[] = [
     date: '2026-07-20',
     docType: 'International Recruitment',
     person: 'Samnang',
+    responsible: 'Verified',
     createdAt: new Date(2026, 6, 20, 14, 15, 0).toISOString()
   },
   {
@@ -28,6 +30,7 @@ const SEED_RECORDS: SignatureRecord[] = [
     date: '2026-07-18',
     docType: 'Compliance',
     person: 'Rima',
+    responsible: 'Checked',
     createdAt: new Date(2026, 6, 18, 11, 0, 0).toISOString()
   },
   {
@@ -36,6 +39,7 @@ const SEED_RECORDS: SignatureRecord[] = [
     date: '2026-07-15',
     docType: 'Payroll',
     person: 'Sreynhanh',
+    responsible: 'Approved',
     createdAt: new Date(2026, 6, 15, 16, 45, 0).toISOString()
   },
   {
@@ -44,6 +48,7 @@ const SEED_RECORDS: SignatureRecord[] = [
     date: '2026-07-10',
     docType: 'Training & Development',
     person: 'Buntheng',
+    responsible: 'Requested',
     createdAt: new Date(2026, 6, 10, 10, 20, 0).toISOString()
   },
   {
@@ -52,6 +57,7 @@ const SEED_RECORDS: SignatureRecord[] = [
     date: '2026-07-05',
     docType: 'Compensation & Benefits (C&B)',
     person: 'Rima',
+    responsible: 'Verified',
     createdAt: new Date(2026, 6, 5, 13, 10, 0).toISOString()
   },
   {
@@ -60,6 +66,7 @@ const SEED_RECORDS: SignatureRecord[] = [
     date: '2026-06-25',
     docType: 'Central HR Document',
     person: 'Chantha',
+    responsible: 'Approved',
     createdAt: new Date(2026, 5, 25, 15, 0, 0).toISOString()
   },
   {
@@ -68,6 +75,7 @@ const SEED_RECORDS: SignatureRecord[] = [
     date: '2026-06-12',
     docType: 'Other',
     person: 'Other',
+    responsible: 'Requested',
     createdAt: new Date(2026, 5, 12, 11, 40, 0).toISOString()
   }
 ];

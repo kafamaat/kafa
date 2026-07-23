@@ -28,6 +28,7 @@ export default function Reports({ records, addToast }: ReportsProps) {
   const [dateTo, setDateTo] = useState('');
   const [docType, setDocType] = useState('');
   const [person, setPerson] = useState('');
+  const [responsible, setResponsible] = useState('');
   
   // Results shown after clicking "Generate"
   const [reportResults, setReportResults] = useState<SignatureRecord[]>([]);
@@ -49,6 +50,7 @@ export default function Reports({ records, addToast }: ReportsProps) {
       // Category constraints
       if (docType && rec.docType !== docType) return false;
       if (person && rec.person !== person) return false;
+      if (responsible && rec.responsible !== responsible) return false;
 
       return true;
     });
@@ -99,27 +101,30 @@ export default function Reports({ records, addToast }: ReportsProps) {
       const dateRangeStr = `Date Range: ${dateFrom || 'All Time'} to ${dateTo || 'All Time'}`;
       const docTypeStr = `Doc Type: ${docType || 'All Types'}`;
       const personStr = `Responsible: ${person || 'All Persons'}`;
+      const sigStr = `Signification: ${responsible || 'All Status'}`;
       const countStr = `Total Records: ${reportResults.length}`;
 
       doc.text(dateRangeStr, 18, 40);
       doc.text(docTypeStr, 18, 45);
-      doc.text(personStr, 110, 40);
+      doc.text(personStr, 18, 50);
+      doc.text(sigStr, 110, 40);
       doc.text(countStr, 110, 45);
 
       // Current Date Stamp
       doc.setFont('helvetica', 'italic');
       doc.setFontSize(8);
       doc.setTextColor(148, 163, 184); // Slate-400
-      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 52);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 57);
 
       // Table mapping
-      const tableHeaders = [['No.', 'Signature Title', 'Signature Date', 'Document Type', 'Responsible Person']];
+      const tableHeaders = [['No.', 'Signature Title', 'Signature Date', 'Document Type', 'Responsible Person', 'Signification Status']];
       const tableRows = reportResults.map((rec, index) => [
         index + 1,
         rec.title,
         rec.date,
         rec.docType,
-        rec.person
+        rec.person,
+        rec.responsible || 'N/A'
       ]);
 
       // Draw table
@@ -132,10 +137,11 @@ export default function Reports({ records, addToast }: ReportsProps) {
         bodyStyles: { fontSize: 8.5 },
         columnStyles: {
           0: { cellWidth: 10 },
-          1: { cellWidth: 70 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 45 },
-          4: { cellWidth: 32 }
+          1: { cellWidth: 60 },
+          2: { cellWidth: 22 },
+          3: { cellWidth: 38 },
+          4: { cellWidth: 28 },
+          5: { cellWidth: 24 }
         },
         margin: { left: 14, right: 14 }
       });
@@ -167,6 +173,7 @@ export default function Reports({ records, addToast }: ReportsProps) {
       'Date of Signature': rec.date,
       'Document Type': rec.docType,
       'Responsible Person': rec.person,
+      'Signification Status': rec.responsible || 'N/A',
       'Timestamp Logged': new Date(rec.createdAt).toLocaleString()
     }));
 
@@ -290,6 +297,24 @@ export default function Reports({ records, addToast }: ReportsProps) {
               <option value="Other">Other</option>
             </select>
           </div>
+
+          {/* Responsible on Signification */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1">
+              <Filter className="w-3.5 h-3.5 text-slate-400" /> Signification Status
+            </label>
+            <select
+              value={responsible}
+              onChange={(e) => setResponsible(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:border-blue-500 text-slate-700 dark:text-slate-200 appearance-none cursor-pointer"
+            >
+              <option value="">All Status</option>
+              <option value="Requested">Requested</option>
+              <option value="Checked">Checked</option>
+              <option value="Verified">Verified</option>
+              <option value="Approved">Approved</option>
+            </select>
+          </div>
         </div>
 
         {/* Action Controls */}
@@ -351,6 +376,7 @@ export default function Reports({ records, addToast }: ReportsProps) {
           </div>
           <div className="text-right">
             <p><strong>Responsible Officer:</strong> {person || 'All Officers'}</p>
+            <p><strong>Signification Status:</strong> {responsible || 'All Status'}</p>
             <p><strong>Total Logs:</strong> {reportResults.length} records</p>
             <p className="text-slate-400 mt-1">Staged on: {new Date().toLocaleString()}</p>
           </div>
@@ -376,13 +402,14 @@ export default function Reports({ records, addToast }: ReportsProps) {
                 <th className="py-3.5 px-2">Signature Title</th>
                 <th className="py-3.5 px-2">Signature Date</th>
                 <th className="py-3.5 px-2">Document Type</th>
-                <th className="py-3.5 px-5 text-right w-44">Person Responsible</th>
+                <th className="py-3.5 px-2">Person Responsible</th>
+                <th className="py-3.5 px-5 text-right w-44">Signification Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-sm">
               {!hasGenerated ? (
                 <tr>
-                  <td colSpan={5} className="py-16 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan={6} className="py-16 text-center text-slate-400 dark:text-slate-500">
                     <div className="max-w-xs mx-auto space-y-2 no-print">
                       <BarChart3 className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto" />
                       <p className="font-medium text-xs">Set parameters above and click "Generate Report".</p>
@@ -393,7 +420,7 @@ export default function Reports({ records, addToast }: ReportsProps) {
                 </tr>
               ) : reportResults.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-16 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan={6} className="py-16 text-center text-slate-400 dark:text-slate-500">
                     <div className="max-w-xs mx-auto space-y-1.5">
                       <AlertCircle className="w-6 h-6 text-slate-300 dark:text-slate-700 mx-auto" />
                       <p className="text-xs">No records matched your specific parameters.</p>
@@ -427,8 +454,18 @@ export default function Reports({ records, addToast }: ReportsProps) {
                           {item.docType}
                         </span>
                       </td>
-                      <td className="py-3 px-5 text-right font-medium text-slate-700 dark:text-slate-300 capitalize">
+                      <td className="py-3 px-2 font-medium text-slate-700 dark:text-slate-300 capitalize">
                         {item.person}
+                      </td>
+                      <td className="py-3 px-5 text-right">
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-tight inline-block ${
+                          item.responsible === 'Approved' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' :
+                          item.responsible === 'Verified' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400' :
+                          item.responsible === 'Checked' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' :
+                          'bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                        }`}>
+                          {item.responsible || 'N/A'}
+                        </span>
                       </td>
                     </tr>
                   );

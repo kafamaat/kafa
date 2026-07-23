@@ -5,6 +5,7 @@ export interface SignatureRecord {
   time?: string; // HH:MM
   docType: string;
   person: string;
+  responsible: string; // Requested | Checked | Verified | Approved
   createdAt: string; // Timestamp string
 }
 

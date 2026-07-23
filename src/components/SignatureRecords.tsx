@@ -48,6 +48,7 @@ export default function SignatureRecords({
   const [localSearch, setLocalSearch] = useState('');
   const [docTypeFilter, setDocTypeFilter] = useState('');
   const [personFilter, setPersonFilter] = useState('');
+  const [responsibleFilter, setResponsibleFilter] = useState('');
   const [showAddForm, setShowAddForm] = useState(initialScrollToAdd);
   
   // Quick Add State
@@ -64,6 +65,7 @@ export default function SignatureRecords({
   });
   const [addDocType, setAddDocType] = useState('');
   const [addPerson, setAddPerson] = useState('');
+  const [addResponsible, setAddResponsible] = useState('');
 
   // Voice recognition states for Quick Add
   const [isListening, setIsListening] = useState(false);
@@ -215,13 +217,18 @@ export default function SignatureRecords({
       addToast('Please select a person responsible.', 'warning');
       return;
     }
+    if (!addResponsible) {
+      addToast('Please select a responsible status on signification.', 'warning');
+      return;
+    }
 
     onAddSignature({
       title: addTitle.trim(),
       date: addDate,
       time: addTime,
       docType: addDocType,
-      person: addPerson
+      person: addPerson,
+      responsible: addResponsible
     });
 
     addToast('Signature record saved successfully!', 'success');
@@ -237,6 +244,7 @@ export default function SignatureRecords({
     });
     setAddDocType('');
     setAddPerson('');
+    setAddResponsible('');
 
     if (isListening && recognitionInstance) {
       recognitionInstance.stop();
@@ -257,6 +265,7 @@ export default function SignatureRecords({
     });
     setAddDocType('');
     setAddPerson('');
+    setAddResponsible('');
     if (isListening && recognitionInstance) {
       recognitionInstance.stop();
     }
@@ -281,6 +290,7 @@ export default function SignatureRecords({
   const [editTime, setEditTime] = useState('');
   const [editDocType, setEditDocType] = useState('');
   const [editPerson, setEditPerson] = useState('');
+  const [editResponsible, setEditResponsible] = useState('');
 
   // Combined Search & Filtering
   const filteredRecords = useMemo(() => {
@@ -294,8 +304,9 @@ export default function SignatureRecords({
 
       const matchesDocType = docTypeFilter === '' || rec.docType === docTypeFilter;
       const matchesPerson = personFilter === '' || rec.person === personFilter;
+      const matchesResponsible = responsibleFilter === '' || rec.responsible === responsibleFilter;
 
-      return matchesQuery && matchesDocType && matchesPerson;
+      return matchesQuery && matchesDocType && matchesPerson && matchesResponsible;
     });
 
     // Sort by Date and Time descending (latest first)
@@ -307,7 +318,7 @@ export default function SignatureRecords({
       }
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-  }, [records, localSearch, globalSearch, docTypeFilter, personFilter]);
+  }, [records, localSearch, globalSearch, docTypeFilter, personFilter, responsibleFilter]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredRecords.length / itemsPerPage) || 1;
@@ -319,7 +330,7 @@ export default function SignatureRecords({
   // Handle page limits on filter change
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [localSearch, globalSearch, docTypeFilter, personFilter]);
+  }, [localSearch, globalSearch, docTypeFilter, personFilter, responsibleFilter]);
 
   // Selection handlers
   const handleSelectRow = (id: string, isChecked: boolean) => {
@@ -354,6 +365,7 @@ export default function SignatureRecords({
     setEditTime(rec.time || '');
     setEditDocType(rec.docType);
     setEditPerson(rec.person);
+    setEditResponsible(rec.responsible || '');
   };
 
   const handleSaveEdit = () => {
@@ -369,7 +381,8 @@ export default function SignatureRecords({
       date: editDate,
       time: editTime || undefined,
       docType: editDocType,
-      person: editPerson
+      person: editPerson,
+      responsible: editResponsible
     });
 
     addToast('Record updated successfully!', 'success');
@@ -405,6 +418,7 @@ export default function SignatureRecords({
       'Date of Signature': rec.date,
       'Document Type': rec.docType,
       'Person Responsible': rec.person,
+      'Responsible on Signification': rec.responsible || '',
       'Created Timestamp': new Date(rec.createdAt).toLocaleString(),
       'Signature Log ID': rec.id
     }));
@@ -616,6 +630,30 @@ export default function SignatureRecords({
                   </select>
                 </div>
               </div>
+
+              {/* 5. Responsible on Signification */}
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  Responsible on Signification <span className="text-rose-500">*</span>
+                </label>
+                <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:border-blue-500 dark:focus-within:border-blue-400 overflow-hidden shadow-sm">
+                  <div className="flex items-center pl-3.5 pointer-events-none text-slate-400 shrink-0">
+                    <CheckCircle className="w-4 h-4" />
+                  </div>
+                  <select
+                    required
+                    value={addResponsible}
+                    onChange={(e) => setAddResponsible(e.target.value)}
+                    className="w-full pl-3 pr-3.5 py-3 bg-transparent text-sm text-slate-700 dark:text-slate-200 focus:outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="" className="bg-white dark:bg-slate-800">Select signification status</option>
+                    <option value="Requested" className="bg-white dark:bg-slate-800">Requested</option>
+                    <option value="Checked" className="bg-white dark:bg-slate-800">Checked</option>
+                    <option value="Verified" className="bg-white dark:bg-slate-800">Verified</option>
+                    <option value="Approved" className="bg-white dark:bg-slate-800">Approved</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             {/* Form Actions */}
@@ -686,6 +724,19 @@ export default function SignatureRecords({
               <option value="Buntheng">Buntheng</option>
               <option value="Other">Other</option>
             </select>
+
+            {/* Responsible on Signification Dropdown */}
+            <select
+              value={responsibleFilter}
+              onChange={(e) => setResponsibleFilter(e.target.value)}
+              className="px-3.5 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 focus:outline-none appearance-none cursor-pointer"
+            >
+              <option value="">All Signification Status</option>
+              <option value="Requested">Requested</option>
+              <option value="Checked">Checked</option>
+              <option value="Verified">Verified</option>
+              <option value="Approved">Approved</option>
+            </select>
           </div>
 
           {/* Action buttons */}
@@ -746,6 +797,7 @@ export default function SignatureRecords({
                 <th className="py-3 px-2">Date</th>
                 <th className="py-3 px-2">Document Type</th>
                 <th className="py-3 px-2">Person Responsible</th>
+                <th className="py-3 px-2">Signification Status</th>
                 <th className="py-3 px-2">Created Time</th>
                 <th className="py-3 px-4 text-right w-36">Actions</th>
               </tr>
@@ -753,7 +805,7 @@ export default function SignatureRecords({
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-sm">
               {currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan={9} className="py-12 text-center text-slate-400 dark:text-slate-500">
                     No signature records match your active query.
                   </td>
                 </tr>
@@ -805,6 +857,16 @@ export default function SignatureRecords({
                       </td>
                       <td className="py-3.5 px-2 font-medium text-slate-700 dark:text-slate-300">
                         {item.person}
+                      </td>
+                      <td className="py-3.5 px-2">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold tracking-tight inline-block ${
+                          item.responsible === 'Approved' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' :
+                          item.responsible === 'Verified' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400' :
+                          item.responsible === 'Checked' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' :
+                          'bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                        }`}>
+                          {item.responsible || 'N/A'}
+                        </span>
                       </td>
                       <td className="py-3.5 px-2 text-xs text-slate-400 dark:text-slate-500">
                         {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
@@ -914,6 +976,15 @@ export default function SignatureRecords({
                     <div className="flex items-center gap-1.5">
                       <User className="w-3.5 h-3.5 text-slate-400" />
                       <span className="font-semibold text-slate-600 dark:text-slate-300">{item.person}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-slate-400" />
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        item.responsible === 'Approved' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' :
+                        item.responsible === 'Verified' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400' :
+                        item.responsible === 'Checked' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' :
+                        'bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                      }`}>{item.responsible || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -1032,6 +1103,14 @@ export default function SignatureRecords({
               </div>
 
               <div className="space-y-1 pt-2">
+                <span className="text-[11px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Responsible on Signification</span>
+                <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 font-medium">
+                  <CheckCircle className="w-4 h-4 text-slate-400" />
+                  <span>{viewingRecord.responsible || 'N/A'}</span>
+                </div>
+              </div>
+
+              <div className="space-y-1 pt-2">
                 <span className="text-[11px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Timestamp Registered</span>
                 <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs">
                   <Clock className="w-4 h-4 text-slate-400" />
@@ -1141,6 +1220,21 @@ export default function SignatureRecords({
                   <option value="Sreynhanh">Sreynhanh</option>
                   <option value="Buntheng">Buntheng</option>
                   <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Responsible on Signification</label>
+                <select
+                  required
+                  value={editResponsible}
+                  onChange={(e) => setEditResponsible(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500"
+                >
+                  <option value="Requested">Requested</option>
+                  <option value="Checked">Checked</option>
+                  <option value="Verified">Verified</option>
+                  <option value="Approved">Approved</option>
                 </select>
               </div>
             </div>

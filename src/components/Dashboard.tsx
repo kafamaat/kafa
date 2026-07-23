@@ -6,7 +6,8 @@ import {
   Users,
   ChevronRight,
   ArrowUpRight,
-  Sparkles
+  Sparkles,
+  CheckCircle
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -469,6 +470,7 @@ export default function Dashboard({ records, onNavigate }: DashboardProps) {
                     <th className="pb-2.5">Title</th>
                     <th className="pb-2.5">Date</th>
                     <th className="pb-2.5">Doc Type</th>
+                    <th className="pb-2.5">Status</th>
                     <th className="pb-2.5 text-right">Person</th>
                   </tr>
                 </thead>
@@ -494,6 +496,16 @@ export default function Dashboard({ records, onNavigate }: DashboardProps) {
                         <td className="py-2.5">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-tight inline-block ${getDocTypeBadge(item.docType)}`}>
                             {item.docType}
+                          </span>
+                        </td>
+                        <td className="py-2.5">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-tight inline-block ${
+                            item.responsible === 'Approved' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400' :
+                            item.responsible === 'Verified' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400' :
+                            item.responsible === 'Checked' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400' :
+                            'bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                          }`}>
+                            {item.responsible || 'N/A'}
                           </span>
                         </td>
                         <td className="py-2.5 text-right font-medium text-slate-700 dark:text-slate-300">
