@@ -6,7 +6,7 @@ import {
   SystemSettings, 
   AppNotification 
 } from './types';
-import { db, subscribeRecords, saveRecords } from './utils/db';
+import { db, subscribeRecords, saveRecords, clearAllRecords } from './utils/db';
 
 // Component imports
 import Sidebar from './components/Sidebar';
@@ -233,7 +233,7 @@ export default function App() {
   // 9. Clear all database rows
   const handleClearAllData = () => {
     setRecords([]);
-    saveRecords([]);
+    clearAllRecords();
 
     const newNotif: AppNotification = {
       id: Math.random().toString(),

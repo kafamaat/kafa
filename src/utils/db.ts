@@ -2,8 +2,6 @@ import {
   collection,
   doc,
   getDocs,
-  setDoc,
-  deleteDoc,
   onSnapshot,
   writeBatch,
   Unsubscribe
@@ -54,12 +52,16 @@ function writeLocal(key: string, value: unknown): void {
 
 // ---- Firestore Records (real-time) ----
 
+// Track whether we've already seeded so we don't re-seed after a deliberate clear
+let hasSeeded = false;
+
 export function subscribeRecords(callback: (records: SignatureRecord[]) => void): Unsubscribe {
   const colRef = collection(firestore, RECORDS_COL);
 
   return onSnapshot(colRef, async (snapshot) => {
-    if (snapshot.empty) {
-      // First load — seed Firestore with default records
+    if (snapshot.empty && !hasSeeded) {
+      // First load and no data yet — seed Firestore with default records
+      hasSeeded = true;
       const batch = writeBatch(firestore);
       SEED_RECORDS.forEach((rec) => {
         batch.set(doc(colRef, rec.id), rec);
@@ -68,6 +70,8 @@ export function subscribeRecords(callback: (records: SignatureRecord[]) => void)
       // onSnapshot will fire again after seeding
       return;
     }
+
+    hasSeeded = true;
 
     const records: SignatureRecord[] = [];
     snapshot.forEach((d) => {
@@ -87,7 +91,6 @@ export function subscribeRecords(callback: (records: SignatureRecord[]) => void)
 export async function saveRecords(records: SignatureRecord[]): Promise<void> {
   const colRef = collection(firestore, RECORDS_COL);
 
-  // Build a map of what currently exists in Firestore so we can diff
   const existingSnap = await getDocs(colRef);
   const existingIds = new Set<string>();
   existingSnap.forEach((d) => existingIds.add(d.id));
@@ -95,12 +98,10 @@ export async function saveRecords(records: SignatureRecord[]): Promise<void> {
   const newIds = new Set(records.map((r) => r.id));
   const batch = writeBatch(firestore);
 
-  // Upsert every record in the list
   records.forEach((rec) => {
     batch.set(doc(colRef, rec.id), rec);
   });
 
-  // Delete records that were removed locally
   existingIds.forEach((id) => {
     if (!newIds.has(id)) {
       batch.delete(doc(colRef, id));
@@ -109,6 +110,28 @@ export async function saveRecords(records: SignatureRecord[]): Promise<void> {
 
   await batch.commit();
   writeLocal('kafa_sig_records_cache', records);
+}
+
+export async function clearAllRecords(): Promise<void> {
+  const colRef = collection(firestore, RECORDS_COL);
+  const snapshot = await getDocs(colRef);
+
+  if (snapshot.empty) {
+    writeLocal('kafa_sig_records_cache', []);
+    return;
+  }
+
+  // Firestore batches support max 500 ops; chunk if needed
+  const allDocs = snapshot.docs;
+  for (let i = 0; i < allDocs.length; i += 500) {
+    const batch = writeBatch(firestore);
+    allDocs.slice(i, i + 500).forEach((d) => {
+      batch.delete(d.ref);
+    });
+    await batch.commit();
+  }
+
+  writeLocal('kafa_sig_records_cache', []);
 }
 
 // ---- Local-only data (Profile, Settings, Notifications) ----
