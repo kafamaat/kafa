@@ -483,7 +483,7 @@ export default function Dashboard({ records, onNavigate }: DashboardProps) {
                         key={item.id} 
                         className={`text-xs transition-all ${
                           isCrossed 
-                            ? 'bg-rose-50/40 dark:bg-rose-950/10 hover:bg-rose-50/60 dark:hover:bg-rose-950/15' 
+                            ? 'bg-amber-50/60 dark:bg-amber-950/15 hover:bg-amber-50/80 dark:hover:bg-amber-950/20' 
                             : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/20'
                         }`}
                       >
