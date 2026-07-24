@@ -20,6 +20,13 @@
   --color-blue-100: rgba(28, 49, 80, 0.12);
   --color-blue-600: #1C3150;                 /* Primary brand action button background */
   --color-blue-700: #122136;                 /* Hover state button */
+
+  --color-red-50: #fecaca;                   /* Overdue row highlight */
+  --color-red-100: #fca5a5;                   /* Overdue row hover */
+  --color-red-200: #f87171;
+  --color-red-600: #dc2626;                   /* Red text / icons */
+  --color-red-700: #b91c1c;
+  --color-red-950: #450a0a;                   /* Dark mode base */
 }
 
 .dark {
@@ -41,6 +48,13 @@
   --color-blue-100: rgba(248, 217, 205, 0.15);
   --color-blue-600: #F8D9CD;                 /* Primary action button background */
   --color-blue-700: #ffebd1;                 /* Hover state button */
+
+  --color-red-50: rgba(220, 38, 38, 0.22);   /* Overdue row highlight */
+  --color-red-100: rgba(220, 38, 38, 0.32);  /* Overdue row hover */
+  --color-red-200: rgba(220, 38, 38, 0.42);
+  --color-red-600: #fca5a5;
+  --color-red-700: #f87171;
+  --color-red-950: #450a0a;
 }
 
 @theme {
