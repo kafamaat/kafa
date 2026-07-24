@@ -436,7 +436,7 @@ export default function Reports({ records, addToast }: ReportsProps) {
                       key={item.id} 
                       className={`transition ${
                         isCrossed 
-                          ? 'bg-amber-50/60 dark:bg-amber-950/15 hover:bg-amber-50/80 dark:hover:bg-amber-950/20' 
+                          ? 'bg-rose-50/60 dark:bg-rose-950/15 hover:bg-rose-50/80 dark:hover:bg-rose-950/20' 
                           : 'hover:bg-slate-50/40 dark:hover:bg-slate-800/10'
                       }`}
                     >

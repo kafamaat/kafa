@@ -784,7 +784,7 @@ export default function SignatureRecords({
                         isSelected 
                           ? 'bg-blue-50/30 dark:bg-blue-950/10 hover:bg-blue-50/40 dark:hover:bg-blue-950/20' 
                           : isCrossed 
-                            ? 'bg-amber-50/60 dark:bg-amber-950/15 hover:bg-amber-50/80 dark:hover:bg-amber-950/20' 
+                            ? 'bg-rose-50/60 dark:bg-rose-950/15 hover:bg-rose-50/80 dark:hover:bg-rose-950/20' 
                             : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/20'
                       }`}
                     >
@@ -886,7 +886,7 @@ export default function SignatureRecords({
                     isSelected 
                       ? 'bg-blue-50/30 dark:bg-blue-950/10 border-blue-200 dark:border-blue-900/50 shadow-sm' 
                       : isCrossed
-                        ? 'bg-amber-50/50 dark:bg-amber-950/15 border-amber-200/60 dark:border-amber-900/30'
+                        ? 'bg-rose-50/50 dark:bg-rose-950/15 border-rose-200/60 dark:border-rose-900/30'
                         : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800'
                   }`}
                 >
