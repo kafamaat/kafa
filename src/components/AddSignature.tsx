@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
   PenTool, 
   Calendar, 
   FolderOpen, 
   User, 
-  Mic, 
-  MicOff, 
   Save, 
   RotateCcw, 
   X,
-  AlertCircle,
-  CheckCircle
+  CheckCircle,
+  FileText
 } from 'lucide-react';
 import { SignatureRecord } from '../types';
+import { SIGNATURE_TITLES } from '../utils/db';
 
 interface AddSignatureProps {
   onAddSignature: (record: Omit<SignatureRecord, 'id' | 'createdAt'>) => void;
@@ -22,148 +21,30 @@ interface AddSignatureProps {
 
 export default function AddSignature({ onAddSignature, onNavigate, addToast }: AddSignatureProps) {
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [date, setDate] = useState(() => {
-    // Default to today
     const d = new Date();
     return d.toISOString().split('T')[0];
   });
   const [docType, setDocType] = useState('');
   const [person, setPerson] = useState('');
   const [responsible, setResponsible] = useState('');
-  
-  // Voice recognition states
-  const [isListening, setIsListening] = useState(false);
-  const [speechSupported, setSpeechSupported] = useState(true);
-  const [speechLang, setSpeechLang] = useState<'km-KH' | 'en-US'>('km-KH');
-  const [recognitionInstance, setRecognitionInstance] = useState<any>(null);
-
-  // Store addToast in a ref to prevent recreating recognitionInstance on renders
-  const addToastRef = useRef(addToast);
-  useEffect(() => {
-    addToastRef.current = addToast;
-  }, [addToast]);
-
-  const speechLangRef = useRef(speechLang);
-  useEffect(() => {
-    speechLangRef.current = speechLang;
-    if (recognitionInstance) {
-      try {
-        recognitionInstance.lang = speechLang;
-      } catch (e) {
-        // ignore
-      }
-    }
-  }, [speechLang, recognitionInstance]);
-
-  useEffect(() => {
-    // Check speech recognition support
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setSpeechSupported(false);
-      return;
-    }
-
-    const rec = new SpeechRecognition();
-    rec.continuous = false;
-    rec.interimResults = false;
-    rec.lang = speechLangRef.current;
-
-    rec.onstart = () => {
-      setIsListening(true);
-      const currentLang = speechLangRef.current === 'km-KH' ? 'Khmer 🇰🇭 (km-KH)' : 'English 🇺🇸';
-      addToastRef.current(`Listening for ${currentLang} voice input...`, 'info');
-    };
-
-    rec.onresult = (event: any) => {
-      const resultText = event.results[0][0].transcript;
-      if (resultText) {
-        setTitle(prev => {
-          const spacing = prev ? ' ' : '';
-          return prev + spacing + resultText;
-        });
-        addToastRef.current('Voice captured successfully!', 'success');
-      }
-    };
-
-    rec.onerror = (event: any) => {
-      console.warn('Speech recognition error event:', event.error);
-      setIsListening(false);
-      
-      // Ignore normal lifecycle speech recognition halts
-      if (event.error === 'aborted' || event.error === 'no-speech') {
-        return;
-      }
-
-      if (event.error === 'not-allowed') {
-        addToastRef.current('Microphone access denied. Please grant permissions.', 'danger');
-      } else {
-        addToastRef.current(`Voice error: ${event.error}`, 'warning');
-      }
-    };
-
-    rec.onend = () => {
-      setIsListening(false);
-    };
-
-    setRecognitionInstance(rec);
-
-    return () => {
-      if (rec) {
-        try {
-          rec.abort();
-        } catch (e) {
-          // ignore
-        }
-      }
-    };
-  }, []);
-
-  const toggleVoice = () => {
-    if (!speechSupported) {
-      addToast('Speech Recognition is not supported in this browser.', 'warning');
-      return;
-    }
-
-    if (!recognitionInstance) return;
-
-    if (isListening) {
-      recognitionInstance.stop();
-    } else {
-      try {
-        recognitionInstance.lang = speechLang;
-        recognitionInstance.start();
-      } catch (e) {
-        // Handle active or pending instances
-        recognitionInstance.abort();
-        setTimeout(() => {
-          try {
-            recognitionInstance.lang = speechLang;
-            recognitionInstance.start();
-          } catch (err) {
-            addToast('Could not start microphone.', 'danger');
-          }
-        }, 200);
-      }
-    }
-  };
 
   const handleReset = () => {
     setTitle('');
+    setDescription('');
     setDate(new Date().toISOString().split('T')[0]);
     setDocType('');
     setPerson('');
     setResponsible('');
-    if (isListening && recognitionInstance) {
-      recognitionInstance.stop();
-    }
     addToast('Form has been reset.', 'info');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) {
-      addToast('Please enter a signature title.', 'warning');
+    if (!title) {
+      addToast('Please select a signature title.', 'warning');
       return;
     }
     if (!date) {
@@ -184,7 +65,8 @@ export default function AddSignature({ onAddSignature, onNavigate, addToast }: A
     }
 
     onAddSignature({
-      title: title.trim(),
+      title,
+      description: description.trim(),
       date,
       docType,
       person,
@@ -215,59 +97,38 @@ export default function AddSignature({ onAddSignature, onNavigate, addToast }: A
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 Signature Title <span className="text-rose-500">*</span>
               </label>
-              <div className="relative flex rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:border-blue-500 dark:focus-within:border-blue-400 overflow-hidden shadow-sm">
+              <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:border-blue-500 dark:focus-within:border-blue-400 overflow-hidden shadow-sm">
                 <div className="flex items-center pl-3.5 pointer-events-none text-slate-400">
                   <PenTool className="w-4 h-4" />
                 </div>
-                <input
-                  type="text"
+                <select
                   required
-                  placeholder="Enter document/signature title..."
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full pl-3 pr-28 py-3 bg-transparent text-sm text-slate-800 dark:text-slate-200 focus:outline-none"
-                />
-                
-                {/* Voice button & Language Selector */}
-                <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setSpeechLang(prev => prev === 'km-KH' ? 'en-US' : 'km-KH')}
-                    title={`Current Voice Language: ${speechLang === 'km-KH' ? 'Khmer' : 'English'}. Click to switch.`}
-                    className="text-[11px] font-bold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition border border-slate-200 dark:border-slate-600"
-                  >
-                    {speechLang === 'km-KH' ? '🇰🇭 ខ្មែរ' : '🇺🇸 EN'}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={toggleVoice}
-                    title={isListening ? 'Stop listening' : `Start voice recognition in ${speechLang === 'km-KH' ? 'Khmer' : 'English'}`}
-                    className={`p-2 rounded-lg cursor-pointer ${
-                      isListening 
-                        ? 'bg-rose-500 text-white animate-pulse' 
-                        : 'bg-slate-100 dark:bg-slate-700 hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-400'
-                    } transition`}
-                  >
-                    {isListening ? <MicOff className="w-4.5 h-4.5" /> : <Mic className="w-4.5 h-4.5" />}
-                  </button>
-                </div>
+                  className="w-full pl-3 pr-3.5 py-3 bg-transparent text-sm text-slate-700 dark:text-slate-200 focus:outline-none appearance-none"
+                >
+                  <option value="" className="bg-white dark:bg-slate-800">Select signature title</option>
+                  {SIGNATURE_TITLES.map(t => (
+                    <option key={t} value={t} className="bg-white dark:bg-slate-800">{t}</option>
+                  ))}
+                </select>
               </div>
+            </div>
 
-              {isListening && (
-                <div className="flex items-center gap-2 px-1 text-xs text-rose-500 animate-pulse font-medium">
-                  <span className="w-2 h-2 rounded-full bg-rose-500 block"></span>
-                  <span>
-                    Listening in {speechLang === 'km-KH' ? 'Khmer 🇰🇭 (ភាសាខ្មែរ)' : 'English 🇺🇸'}... Speak clearly.
-                  </span>
-                </div>
-              )}
-              {!speechSupported && (
-                <div className="flex items-center gap-1.5 px-1 text-[11px] text-slate-400">
-                  <AlertCircle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span>Speech-to-text not supported in iframe/browser container.</span>
-                </div>
-              )}
+            {/* Description */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-slate-400" /> Description
+              </label>
+              <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:border-blue-500 dark:focus-within:border-blue-400 overflow-hidden shadow-sm">
+                <textarea
+                  placeholder="Enter description (optional)"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  className="w-full px-3.5 py-3 bg-transparent text-sm text-slate-800 dark:text-slate-200 focus:outline-none resize-none"
+                />
+              </div>
             </div>
 
             {/* Date of Signature */}

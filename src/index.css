@@ -1,7 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+/* Theme Colors */
+[data-theme="ocean"] { --theme-bg: #1C3150; --theme-text: #F8D9CD; --theme-card: #FFF5F1; --theme-card-dark: #253d5e; }
+[data-theme="emerald"] { --theme-bg: #064E3B; --theme-text: #ECFDF5; --theme-card: #F0FDF4; --theme-card-dark: #065F46; }
+[data-theme="royal"] { --theme-bg: #1E3A5F; --theme-text: #E0E7FF; --theme-card: #EFF6FF; --theme-card-dark: #1E40AF; }
+[data-theme="warmth"] { --theme-bg: #5C4033; --theme-text: #FFF8F0; --theme-card: #FFF7ED; --theme-card-dark: #7C4A3E; }
+[data-theme="midnight"] { --theme-bg: #0F172A; --theme-text: #E2E8F0; --theme-card: #F8FAFC; --theme-card-dark: #1E293B; }
+[data-theme="forest"] { --theme-bg: #14532D; --theme-text: #F0FDF4; --theme-card: #F0FDF4; --theme-card-dark: #166534; }
+[data-theme="slate"] { --theme-bg: #1E293B; --theme-text: #F1F5F9; --theme-card: #F8FAFC; --theme-card-dark: #334155; }
+[data-theme="rosewood"] { --theme-bg: #4C0519; --theme-text: #FFF1F2; --theme-card: #FFF1F2; --theme-card-dark: #881337; }
+[data-theme="amber"] { --theme-bg: #451A03; --theme-text: #FFFBEB; --theme-card: #FFFBEB; --theme-card-dark: #78350F; }
+[data-theme="teal"] { --theme-bg: #134E4A; --theme-text: #F0FDFA; --theme-card: #F0FDFA; --theme-card-dark: #115E59; }
+[data-theme="violet"] { --theme-bg: #2E1065; --theme-text: #F5F3FF; --theme-card: #F5F3FF; --theme-card-dark: #4C1D95; }
+[data-theme="coral"] { --theme-bg: #7F1D1D; --theme-text: #FFF5F5; --theme-card: #FFF5F5; --theme-card-dark: #991B1B; }
+[data-theme="graphite"] { --theme-bg: #1F2937; --theme-text: #F9FAFB; --theme-card: #F9FAFB; --theme-card-dark: #374151; }
+[data-theme="azure"] { --theme-bg: #1E3A8A; --theme-text: #EFF6FF; --theme-card: #EFF6FF; --theme-card-dark: #1D4ED8; }
+[data-theme="sakura"] { --theme-bg: #831843; --theme-text: #FDF2F8; --theme-card: #FDF2F8; --theme-card-dark: #9D174D; }
+
+/* Accent Colors */
+[data-accent="blue"] { --accent: #3B82F6; --accent-hover: #2563EB; }
+[data-accent="green"] { --accent: #10B981; --accent-hover: #059669; }
+[data-accent="purple"] { --accent: #8B5CF6; --accent-hover: #7C3AED; }
+[data-accent="orange"] { --accent: #F59E0B; --accent-hover: #D97706; }
+[data-accent="pink"] { --accent: #EC4899; --accent-hover: #DB2777; }
+[data-accent="cyan"] { --accent: #06B6D4; --accent-hover: #0891B2; }
+[data-accent="red"] { --accent: #EF4444; --accent-hover: #DC2626; }
+[data-accent="indigo"] { --accent: #6366F1; --accent-hover: #4F46E5; }
+[data-accent="teal"] { --accent: #14B8A6; --accent-hover: #0D9488; }
+[data-accent="rose"] { --accent: #F43F5E; --accent-hover: #E11D48; }
+[data-accent="amber"] { --accent: #F59E0B; --accent-hover: #D97706; }
+
 :root {
+  --accent: #1C3150;
+  --accent-hover: #122136;
+
   /* Day Mode Core branding: Background #F8D9CD, Text #1C3150 */
   --color-slate-50: #F8D9CD;                 /* Main background */
   --color-slate-100: rgba(28, 49, 80, 0.1);  /* Very soft borders / outlines */
@@ -18,8 +51,8 @@
   --color-white: #FFF5F1;                    /* Layered card/panel background */
   --color-blue-50: rgba(28, 49, 80, 0.05);   /* Hover selection row */
   --color-blue-100: rgba(28, 49, 80, 0.12);
-  --color-blue-600: #1C3150;                 /* Primary brand action button background */
-  --color-blue-700: #122136;                 /* Hover state button */
+  --color-blue-600: var(--accent);            /* Primary brand action button background */
+  --color-blue-700: var(--accent-hover);      /* Hover state button */
 
   --color-red-50: #fecaca;                   /* Overdue row highlight */
   --color-red-100: #fca5a5;                   /* Overdue row hover */
@@ -29,7 +62,15 @@
   --color-red-950: #450a0a;                   /* Dark mode base */
 }
 
+[data-accent] {
+  --color-blue-600: var(--accent);
+  --color-blue-700: var(--accent-hover);
+}
+
 .dark {
+  --accent: #F8D9CD;
+  --accent-hover: #ffebd1;
+
   /* Night Mode Core branding: Background #1C3150, Text #F8D9CD */
   --color-slate-50: #1C3150;                 /* Dark main background */
   --color-slate-100: rgba(248, 217, 205, 0.1);  /* Very soft borders */
@@ -46,8 +87,8 @@
   --color-white: #253d5e;                    /* Card/panel in night mode */
   --color-blue-50: rgba(248, 217, 205, 0.08);   /* Selection row hover */
   --color-blue-100: rgba(248, 217, 205, 0.15);
-  --color-blue-600: #F8D9CD;                 /* Primary action button background */
-  --color-blue-700: #ffebd1;                 /* Hover state button */
+  --color-blue-600: var(--accent);            /* Primary action button background */
+  --color-blue-700: var(--accent-hover);      /* Hover state button */
 
   --color-red-50: rgba(220, 38, 38, 0.22);   /* Overdue row highlight */
   --color-red-100: rgba(220, 38, 38, 0.32);  /* Overdue row hover */
@@ -55,6 +96,11 @@
   --color-red-600: #fca5a5;
   --color-red-700: #f87171;
   --color-red-950: #450a0a;
+}
+
+[data-accent] {
+  --color-blue-600: var(--accent);
+  --color-blue-700: var(--accent-hover);
 }
 
 @theme {

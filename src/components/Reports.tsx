@@ -117,10 +117,11 @@ export default function Reports({ records, addToast }: ReportsProps) {
       doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 57);
 
       // Table mapping
-      const tableHeaders = [['No.', 'Signature Title', 'Signature Date', 'Document Type', 'Responsible Person', 'Signification Status']];
+      const tableHeaders = [['No.', 'Signature Title', 'Description', 'Signature Date', 'Document Type', 'Responsible Person', 'Signification Status']];
       const tableRows = reportResults.map((rec, index) => [
         index + 1,
         rec.title,
+        rec.description || '',
         rec.date,
         rec.docType,
         rec.person,
@@ -170,6 +171,7 @@ export default function Reports({ records, addToast }: ReportsProps) {
     const formatted = reportResults.map((rec, idx) => ({
       'No.': idx + 1,
       'Signature Title': rec.title,
+      'Description': rec.description,
       'Date of Signature': rec.date,
       'Document Type': rec.docType,
       'Responsible Person': rec.person,
@@ -400,6 +402,7 @@ export default function Reports({ records, addToast }: ReportsProps) {
               <tr className="border-b border-slate-100 dark:border-slate-800/80 text-xs text-slate-400 uppercase tracking-wider font-semibold bg-slate-50/50 dark:bg-slate-900/30">
                 <th className="py-3.5 px-5 w-16">No.</th>
                 <th className="py-3.5 px-2">Signature Title</th>
+                <th className="py-3.5 px-2">Description</th>
                 <th className="py-3.5 px-2">Signature Date</th>
                 <th className="py-3.5 px-2">Document Type</th>
                 <th className="py-3.5 px-2">Person Responsible</th>
@@ -409,7 +412,7 @@ export default function Reports({ records, addToast }: ReportsProps) {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-sm">
               {!hasGenerated ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan={7} className="py-16 text-center text-slate-400 dark:text-slate-500">
                     <div className="max-w-xs mx-auto space-y-2 no-print">
                       <BarChart3 className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto" />
                       <p className="font-medium text-xs">Set parameters above and click "Generate Report".</p>
@@ -420,7 +423,7 @@ export default function Reports({ records, addToast }: ReportsProps) {
                 </tr>
               ) : reportResults.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan={7} className="py-16 text-center text-slate-400 dark:text-slate-500">
                     <div className="max-w-xs mx-auto space-y-1.5">
                       <AlertCircle className="w-6 h-6 text-slate-300 dark:text-slate-700 mx-auto" />
                       <p className="text-xs">No records matched your specific parameters.</p>
@@ -445,6 +448,9 @@ export default function Reports({ records, addToast }: ReportsProps) {
                       </td>
                       <td className="py-3 px-2 font-semibold text-slate-800 dark:text-slate-200">
                         {item.title}
+                      </td>
+                      <td className="py-3 px-2 text-slate-500 dark:text-slate-400 text-xs max-w-48 truncate">
+                        {item.description || '-'}
                       </td>
                       <td className="py-3 px-2 text-slate-500 dark:text-slate-400">
                         {item.date}

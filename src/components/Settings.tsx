@@ -4,9 +4,11 @@ import {
   Trash2, 
   AlertTriangle, 
   ShieldAlert,
-  X
+  X,
+  Check
 } from 'lucide-react';
 import { SystemSettings } from '../types';
+import { THEME_COLORS, ACCENT_COLORS } from '../utils/db';
 
 interface SettingsProps {
   settings: SystemSettings;
@@ -26,6 +28,16 @@ export default function Settings({ settings, onUpdateSettings, onClearAllData, a
       darkMode: checked
     });
     addToast(checked ? 'Dark theme activated!' : 'Light theme activated!', 'info');
+  };
+
+  const handleThemeChange = (theme: string) => {
+    onUpdateSettings({ ...settings, themeColor: theme });
+    addToast(`Theme changed to ${THEME_COLORS.find(t => t.value === theme)?.label || theme}!`, 'success');
+  };
+
+  const handleAccentChange = (accent: string) => {
+    onUpdateSettings({ ...settings, accentColor: accent });
+    addToast(`Accent color changed to ${ACCENT_COLORS.find(a => a.value === accent)?.label || accent}!`, 'success');
   };
 
   const handleToggleNotifications = (checked: boolean) => {
@@ -87,6 +99,46 @@ export default function Settings({ settings, onUpdateSettings, onClearAllData, a
               />
               <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
             </label>
+          </div>
+
+          {/* Theme Mode */}
+          <div className="py-3 border-t border-slate-100 dark:border-slate-800">
+            <h5 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Theme Mode</h5>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mb-3">Choose your preferred theme color scheme.</p>
+            <div className="flex flex-wrap gap-2">
+              {THEME_COLORS.map(theme => (
+                <button
+                  key={theme.value}
+                  onClick={() => handleThemeChange(theme.value)}
+                  className="relative w-9 h-9 rounded-xl cursor-pointer transition-transform hover:scale-110 flex items-center justify-center"
+                  style={{ backgroundColor: theme.bg, color: theme.text }}
+                  title={theme.label}
+                >
+                  {settings.themeColor === theme.value && <Check className="w-4 h-4" />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Accent Color */}
+          <div className="py-3 border-t border-slate-100 dark:border-slate-800">
+            <h5 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Accent Color</h5>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mb-3">Choose your preferred accent color for buttons and highlights.</p>
+            <div className="flex flex-wrap gap-2">
+              {ACCENT_COLORS.map(accent => (
+                <button
+                  key={accent.value}
+                  onClick={() => handleAccentChange(accent.value)}
+                  className="relative w-9 h-9 rounded-xl cursor-pointer transition-transform hover:scale-110 flex items-center justify-center"
+                  style={{ backgroundColor: accent.hex }}
+                  title={accent.label}
+                >
+                  {settings.accentColor === accent.value && (
+                    <Check className="w-4 h-4 text-white drop-shadow-md" />
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

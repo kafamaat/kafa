@@ -1,6 +1,7 @@
 export interface SignatureRecord {
   id: string;
   title: string;
+  description: string;
   date: string; // YYYY-MM-DD
   time?: string; // HH:MM
   docType: string;
@@ -25,4 +26,6 @@ export interface UserProfile {
 export interface SystemSettings {
   darkMode: boolean;
   enableNotifications: boolean;
+  themeColor: string;
+  accentColor: string;
 }

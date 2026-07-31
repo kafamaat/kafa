@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Search, 
   Trash2, 
@@ -18,11 +18,11 @@ import {
   Plus,
   Save,
   RotateCcw,
-  Mic,
-  MicOff,
-  PenTool
+  PenTool,
+  FileText
 } from 'lucide-react';
 import { SignatureRecord } from '../types';
+import { SIGNATURE_TITLES } from '../utils/db';
 import * as XLSX from 'xlsx';
 
 interface SignatureRecordsProps {
@@ -53,6 +53,7 @@ export default function SignatureRecords({
   
   // Quick Add State
   const [addTitle, setAddTitle] = useState('');
+  const [addDescription, setAddDescription] = useState('');
   const [addDate, setAddDate] = useState(() => {
     const d = new Date();
     return d.toISOString().split('T')[0];
@@ -61,29 +62,6 @@ export default function SignatureRecords({
   const [addPerson, setAddPerson] = useState('');
   const [addResponsible, setAddResponsible] = useState('');
 
-  // Voice recognition states for Quick Add
-  const [isListening, setIsListening] = useState(false);
-  const [speechSupported, setSpeechSupported] = useState(true);
-  const [speechLang, setSpeechLang] = useState<'km-KH' | 'en-US'>('km-KH');
-  const [recognitionInstance, setRecognitionInstance] = useState<any>(null);
-
-  const addToastRef = useRef(addToast);
-  useEffect(() => {
-    addToastRef.current = addToast;
-  }, [addToast]);
-
-  const speechLangRef = useRef(speechLang);
-  useEffect(() => {
-    speechLangRef.current = speechLang;
-    if (recognitionInstance) {
-      try {
-        recognitionInstance.lang = speechLang;
-      } catch (e) {
-        // ignore
-      }
-    }
-  }, [speechLang, recognitionInstance]);
-
   // Handle optional auto-scroll on mount
   useEffect(() => {
     if (initialScrollToAdd) {
@@ -91,108 +69,18 @@ export default function SignatureRecords({
         const el = document.getElementById('quick-add-section');
         if (el) {
           el.scrollIntoView({ behavior: 'smooth' });
-          const input = el.querySelector('input');
+          const input = el.querySelector<HTMLElement>('input,select');
           if (input) input.focus();
         }
       }, 300);
     }
   }, [initialScrollToAdd]);
 
-  // Speech Recognition Setup
-  useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setSpeechSupported(false);
-      return;
-    }
-
-    const rec = new SpeechRecognition();
-    rec.continuous = false;
-    rec.interimResults = false;
-    rec.lang = speechLangRef.current;
-
-    rec.onstart = () => {
-      setIsListening(true);
-      const currentLang = speechLangRef.current === 'km-KH' ? 'Khmer 🇰🇭 (km-KH)' : 'English 🇺🇸';
-      addToastRef.current(`Listening for ${currentLang} voice input...`, 'info');
-    };
-
-    rec.onresult = (event: any) => {
-      const resultText = event.results[0][0].transcript;
-      if (resultText) {
-        setAddTitle(prev => {
-          const spacing = prev ? ' ' : '';
-          return prev + spacing + resultText;
-        });
-        addToastRef.current('Voice captured successfully!', 'success');
-      }
-    };
-
-    rec.onerror = (event: any) => {
-      console.warn('Speech recognition error event:', event.error);
-      setIsListening(false);
-      
-      if (event.error === 'aborted' || event.error === 'no-speech') {
-        return;
-      }
-
-      if (event.error === 'not-allowed') {
-        addToastRef.current('Microphone access denied. Please grant permissions.', 'danger');
-      } else {
-        addToastRef.current(`Voice error: ${event.error}`, 'warning');
-      }
-    };
-
-    rec.onend = () => {
-      setIsListening(false);
-    };
-
-    setRecognitionInstance(rec);
-
-    return () => {
-      if (rec) {
-        try {
-          rec.abort();
-        } catch (e) {
-          // ignore
-        }
-      }
-    };
-  }, []);
-
-  const toggleVoice = () => {
-    if (!speechSupported) {
-      addToast('Speech Recognition is not supported in this browser.', 'warning');
-      return;
-    }
-
-    if (!recognitionInstance) return;
-
-    if (isListening) {
-      recognitionInstance.stop();
-    } else {
-      try {
-        recognitionInstance.lang = speechLang;
-        recognitionInstance.start();
-      } catch (e) {
-        recognitionInstance.abort();
-        setTimeout(() => {
-          try {
-            recognitionInstance.lang = speechLang;
-            recognitionInstance.start();
-          } catch (err) {
-            addToast('Could not start microphone.', 'danger');
-          }
-        }, 200);
-      }
-    }
-  };
-
   const handleQuickAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!addTitle.trim()) {
-      addToast('Please enter a signature title.', 'warning');
+    if (!addTitle) {
+      addToast('Please select a signature title.', 'warning');
       return;
     }
     if (!addDate) {
@@ -216,7 +104,8 @@ export default function SignatureRecords({
     const autoTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
     onAddSignature({
-      title: addTitle.trim(),
+      title: addTitle,
+      description: addDescription.trim(),
       date: addDate,
       time: autoTime,
       docType: addDocType,
@@ -228,14 +117,11 @@ export default function SignatureRecords({
     
     // Clear fields
     setAddTitle('');
+    setAddDescription('');
     setAddDate(new Date().toISOString().split('T')[0]);
     setAddDocType('');
     setAddPerson('');
     setAddResponsible('');
-
-    if (isListening && recognitionInstance) {
-      recognitionInstance.stop();
-    }
 
     // Auto-hide the form after saving
     setShowAddForm(false);
@@ -243,13 +129,11 @@ export default function SignatureRecords({
 
   const handleQuickReset = () => {
     setAddTitle('');
+    setAddDescription('');
     setAddDate(new Date().toISOString().split('T')[0]);
     setAddDocType('');
     setAddPerson('');
     setAddResponsible('');
-    if (isListening && recognitionInstance) {
-      recognitionInstance.stop();
-    }
     addToast('Quick Add form has been reset.', 'info');
   };
   
@@ -267,6 +151,7 @@ export default function SignatureRecords({
 
   // Edit fields state
   const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
   const [editDate, setEditDate] = useState('');
   const [editTime, setEditTime] = useState('');
   const [editDocType, setEditDocType] = useState('');
@@ -278,8 +163,9 @@ export default function SignatureRecords({
     const filtered = records.filter(rec => {
       // Free-text matches (either from the global search in header OR the local records search)
       const query = (localSearch || globalSearch).toLowerCase().trim();
-      const matchesQuery = query === '' || 
+      const       matchesQuery = query === '' || 
         rec.title.toLowerCase().includes(query) ||
+        rec.description.toLowerCase().includes(query) ||
         rec.person.toLowerCase().includes(query) ||
         rec.docType.toLowerCase().includes(query);
 
@@ -342,6 +228,7 @@ export default function SignatureRecords({
   const handleOpenEdit = (rec: SignatureRecord) => {
     setEditingRecord(rec);
     setEditTitle(rec.title);
+    setEditDescription(rec.description || '');
     setEditDate(rec.date);
     setEditTime(rec.time || '');
     setEditDocType(rec.docType);
@@ -358,7 +245,8 @@ export default function SignatureRecords({
 
     onUpdateRecord({
       ...editingRecord,
-      title: editTitle.trim(),
+      title: editTitle,
+      description: editDescription.trim(),
       date: editDate,
       time: editTime || undefined,
       docType: editDocType,
@@ -396,6 +284,7 @@ export default function SignatureRecords({
     const formattedData = recordsToExport.map((rec, idx) => ({
       'No.': idx + 1,
       'Document Title': rec.title,
+      'Description': rec.description,
       'Date of Signature': rec.date,
       'Document Type': rec.docType,
       'Person Responsible': rec.person,
@@ -471,53 +360,38 @@ export default function SignatureRecords({
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                   Signature Title <span className="text-rose-500">*</span>
                 </label>
-                <div className="relative flex rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:border-blue-500 dark:focus-within:border-blue-400 overflow-hidden shadow-sm">
+                <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:border-blue-500 dark:focus-within:border-blue-400 overflow-hidden shadow-sm">
                   <div className="flex items-center pl-3.5 pointer-events-none text-slate-400 shrink-0">
                     <PenTool className="w-4 h-4" />
                   </div>
-                  <input
-                    type="text"
+                  <select
                     required
-                    placeholder="Enter document/signature title..."
                     value={addTitle}
                     onChange={(e) => setAddTitle(e.target.value)}
-                    className="w-full pl-3 pr-28 py-3 bg-transparent text-sm text-slate-800 dark:text-slate-200 focus:outline-none"
-                  />
-                  
-                  {/* Voice recognition mic button & Language Selector */}
-                  <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setSpeechLang(prev => prev === 'km-KH' ? 'en-US' : 'km-KH')}
-                      title={`Current Voice Language: ${speechLang === 'km-KH' ? 'Khmer' : 'English'}. Click to switch.`}
-                      className="text-[11px] font-bold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition border border-slate-200 dark:border-slate-600"
-                    >
-                      {speechLang === 'km-KH' ? '🇰🇭 ខ្មែរ' : '🇺🇸 EN'}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={toggleVoice}
-                      title={isListening ? 'Stop listening' : `Start voice recognition in ${speechLang === 'km-KH' ? 'Khmer' : 'English'}`}
-                      className={`p-2 rounded-lg cursor-pointer ${
-                        isListening 
-                          ? 'bg-rose-500 text-white animate-pulse' 
-                          : 'bg-slate-100 dark:bg-slate-700 hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-400'
-                      } transition`}
-                    >
-                      {isListening ? <MicOff className="w-4.5 h-4.5" /> : <Mic className="w-4.5 h-4.5" />}
-                    </button>
-                  </div>
+                    className="w-full pl-3 pr-3.5 py-3 bg-transparent text-sm text-slate-700 dark:text-slate-200 focus:outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="" className="bg-white dark:bg-slate-800">Select signature title</option>
+                    {SIGNATURE_TITLES.map(t => (
+                      <option key={t} value={t} className="bg-white dark:bg-slate-800">{t}</option>
+                    ))}
+                  </select>
                 </div>
+              </div>
 
-                {isListening && (
-                  <div className="flex items-center gap-2 px-1 text-xs text-rose-500 animate-pulse font-medium">
-                    <span className="w-2 h-2 rounded-full bg-rose-500 block"></span>
-                    <span>
-                      Listening in {speechLang === 'km-KH' ? 'Khmer 🇰🇭 (ភាសាខ្មែរ)' : 'English 🇺🇸'}... Speak clearly.
-                    </span>
-                  </div>
-                )}
+              {/* 1b. Description */}
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <FileText className="w-4 h-4 text-slate-400" /> Description
+                </label>
+                <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:border-blue-500 dark:focus-within:border-blue-400 overflow-hidden shadow-sm">
+                  <textarea
+                    placeholder="Enter description (optional)"
+                    value={addDescription}
+                    onChange={(e) => setAddDescription(e.target.value)}
+                    rows={3}
+                    className="w-full px-3.5 py-3 bg-transparent text-sm text-slate-800 dark:text-slate-200 focus:outline-none resize-none"
+                  />
+                </div>
               </div>
 
               {/* 2. Date of Signature */}
@@ -756,6 +630,7 @@ export default function SignatureRecords({
                 </th>
                 <th className="py-3 px-2 w-16">No.</th>
                 <th className="py-3 px-2">Signature Title</th>
+                <th className="py-3 px-2">Description</th>
                 <th className="py-3 px-2">Date</th>
                 <th className="py-3 px-2">Document Type</th>
                 <th className="py-3 px-2">Person Responsible</th>
@@ -767,7 +642,7 @@ export default function SignatureRecords({
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-sm">
               {currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan={10} className="py-12 text-center text-slate-400 dark:text-slate-500">
                     No signature records match your active query.
                   </td>
                 </tr>
@@ -801,6 +676,9 @@ export default function SignatureRecords({
                       </td>
                       <td className="py-3.5 px-2 font-semibold text-slate-800 dark:text-slate-100 max-w-64 truncate">
                         {item.title}
+                      </td>
+                      <td className="py-3.5 px-2 text-slate-500 dark:text-slate-400 max-w-48 truncate text-xs">
+                        {item.description || '-'}
                       </td>
                       <td className="py-3.5 px-2 text-slate-500 dark:text-slate-400">
                         <div className="flex flex-col">
@@ -1030,6 +908,11 @@ export default function SignatureRecords({
                 <p className="font-semibold text-slate-800 dark:text-slate-100">{viewingRecord.title}</p>
               </div>
 
+              <div className="space-y-1">
+                <span className="text-[11px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Description</span>
+                <p className="text-slate-600 dark:text-slate-300">{viewingRecord.description || '-'}</p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div className="space-y-1">
                   <span className="text-[11px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Date of Signature</span>
@@ -1117,12 +1000,25 @@ export default function SignatureRecords({
             <div className="p-5 space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Signature Title</label>
-                <input
-                  type="text"
+                <select
                   required
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500"
+                >
+                  {SIGNATURE_TITLES.map(t => (
+                    <option key={t} value={t} className="bg-white dark:bg-slate-800">{t}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Description</label>
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500 resize-none"
                 />
               </div>
 

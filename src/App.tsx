@@ -85,6 +85,15 @@ export default function App() {
     }
   }, [settings.darkMode]);
 
+  // 2b. Sync Theme Color and Accent Color
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', settings.themeColor);
+  }, [settings.themeColor]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-accent', settings.accentColor);
+  }, [settings.accentColor]);
+
   // Toast adder helper
   const addToast = useCallback((text: string, type: 'success' | 'info' | 'warning' | 'danger' = 'info') => {
     if (!settings.enableNotifications) return;
@@ -157,6 +166,7 @@ export default function App() {
   const handleAddSignature = (newRecord: Omit<SignatureRecord, 'id' | 'createdAt'>) => {
     const recordWithId: SignatureRecord = {
       ...newRecord,
+      description: newRecord.description || '',
       id: 'rec-' + Math.random().toString(36).substring(2, 9),
       createdAt: new Date().toISOString()
     };
@@ -318,7 +328,7 @@ export default function App() {
             settings={settings} 
             onUpdateSettings={handleUpdateSettings} 
             onClearAllData={handleClearAllData} 
-            addToast={addToast} 
+            addToast={addToast}
           />
         );
       default:
